@@ -61,10 +61,7 @@ if __name__ == "__main__":
     lines = load_data("train.txt")
     print(lines.head)
 
-    # Preprocess data
     """
-    processed_data = preprocess_data(data)
-
     # Split data
     X_train, X_test, y_train, y_test = split_data(processed_data, labels)
 
