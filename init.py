@@ -11,7 +11,7 @@ def load_data(file_name):
     entity_labels = []
     with open(file_name, "r") as file:
         lines = file.readlines()
-    
+
     for line in lines:
         parts = line.strip().split()
         if len(parts) == 3:
@@ -20,6 +20,15 @@ def load_data(file_name):
             pos_tags.append(pos)
     df = pd.DataFrame({"Word": words, "POS_Tag": pos_tags})
     return df
+
+
+def numerical_labels(pos):
+    d = {}
+    count = 0
+    for i in pos:
+        d[i] = count
+        count += 1
+    return d
 
 
 # Split data into training and testing sets
@@ -58,8 +67,14 @@ def evaluate_model(model, X_test, y_test):
 # Main execution
 if __name__ == "__main__":
     # Load data
-    lines = load_data("train.txt")
-    print(lines.head)
+    data = load_data("train.txt")
+    print(data.head)
+    X = data["Word"]
+    Y = data["POS_Tag"]
+    print(set(Y.values))
+    unique_labels = set(Y.values)
+    d = numerical_labels(unique_labels)
+    print(d)
 
     """
     # Split data
