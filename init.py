@@ -1,3 +1,4 @@
+from math import floor
 import numpy as np
 import pandas as pd
 import torch
@@ -29,6 +30,77 @@ def numerical_labels(pos):
         d[i] = count
         count += 1
     return d
+
+
+# Returns true if a word is capitalized, need to implement functionality for punctuations
+def is_capitalized(word):
+    if word[0] == word[0].upper():
+        return 1
+    return 0
+
+
+def prefix(word):
+    prefixes = [
+        "multi",
+        "over",
+        "un",
+        "dis",
+        "in",
+        "pre",
+        "inter",
+        "re",
+        "co",
+        "sub",
+        "mis",
+        "anti",
+        "ex",
+        "tele",
+        "bi",
+    ]
+    for i in range(0, len(prefixes)):
+        if word.startswith(prefixes[i]):
+            return i
+    # no prefix numerical value
+    return len(prefixes) + 1
+
+
+def suffix(word):
+    suffixes = [
+        "ful",
+        "s",
+        "able",
+        "ize",
+        "ing",
+        "ment",
+        "ed",
+        "sion",
+        "ity",
+        "ness",
+        "tion",
+        "er",
+        "less",
+        "est",
+        "ly",
+        "es",
+        "ible",
+        "ise",
+    ]
+    for i in range(0, len(suffixes)):
+        if word.endswith(suffixes[i]):
+            return i
+    # no suffix numerical value
+    return len(suffixes) + 1
+
+
+def distance_from_period(text):
+    l = []
+    count = 0
+    for i in range(len(text)):
+        if text[i] == ".":
+            count = 0
+        l.append(count)
+        count = count + 1
+    return l
 
 
 # Split data into training and testing sets
@@ -75,6 +147,19 @@ if __name__ == "__main__":
     unique_labels = set(Y.values)
     d = numerical_labels(unique_labels)
     print(d)
+    data["Capitalized"] = data["Word"].apply(is_capitalized)
+    data["Length"] = data["Word"].apply(len)
+    data["Prefix"] = data["Word"].apply(prefix)
+    data["Suffix"] = data["Word"].apply(suffix)
+    distances = distance_from_period(data["Word"].values)
+    print(distances)
+    # here we find the positon that a given value is in a sentance.
+    # create a dictionary of each sentance, with the values inside of it being the line at which it appeared
+    for index, row in data.iterrows():
+        data.at[index, "Position"] = floor(distances[index])
+    # here we find the positon that a given value is in a sentance.
+    # create a dictionary of each sentance, with the values inside of it being the line at which it appeared
+    print(data.head)
 
     """
     # Split data
