@@ -1,8 +1,10 @@
 from math import floor
+import random
 import numpy as np
 import pandas as pd
 import torch
 import nltk
+from nltk.classify import NaiveBayesClassifier
 
 
 # Load data
@@ -21,6 +23,19 @@ def load_data(file_name):
             pos_tags.append(pos)
     df = pd.DataFrame({"Word": words, "POS_Tag": pos_tags})
     return df
+
+
+def word_features(row):
+    return {
+        "Word": row[
+            0
+        ],  # Accessing the first element, which corresponds to the 'Word' column
+        "Capitalized": is_capitalized(row[2]),
+        "Length": row[3],
+        "Prefix": row[4],
+        "Suffix": row[5],
+        "Position": row[6],
+    }
 
 
 def numerical_labels(pos):
@@ -141,25 +156,39 @@ if __name__ == "__main__":
     # Load data
     data = load_data("train.txt")
     print(data.head)
-    X = data["Word"]
-    Y = data["POS_Tag"]
-    print(set(Y.values))
-    unique_labels = set(Y.values)
-    d = numerical_labels(unique_labels)
-    print(d)
+    # print(set(Y.values))
+    # unique_labels = set(Y.values)
+    # d = numerical_labels(unique_labels)
+    # print(d)
     data["Capitalized"] = data["Word"].apply(is_capitalized)
     data["Length"] = data["Word"].apply(len)
     data["Prefix"] = data["Word"].apply(prefix)
     data["Suffix"] = data["Word"].apply(suffix)
     distances = distance_from_period(data["Word"].values)
-    print(distances)
-    # here we find the positon that a given value is in a sentance.
-    # create a dictionary of each sentance, with the values inside of it being the line at which it appeared
     for index, row in data.iterrows():
         data.at[index, "Position"] = floor(distances[index])
-    # here we find the positon that a given value is in a sentance.
-    # create a dictionary of each sentance, with the values inside of it being the line at which it appeared
-    print(data.head)
+
+    print(data.columns)
+    X = data[["Word", "Capitalized", "Length", "Prefix", "Suffix", "Position"]]
+    Y = data["POS_Tag"]
+    featuresets = [
+        ({col: row[col] for col in X.columns}, label)
+        for index, (index, row), label in zip(X.iterrows(), data.iterrows(), Y)
+    ]
+    random.shuffle(featuresets)
+
+    # Split data into training and testing sets
+    train_set, test_set = (
+        featuresets[: int(len(featuresets) * 0.8)],
+        featuresets[int(len(featuresets) * 0.8) :],
+    )
+
+    # Train
+    classifier = NaiveBayesClassifier.train(train_set)
+
+    # Evaluate
+    accuracy = nltk.classify.util.accuracy(classifier, test_set)
+    print(f"Classifier Accuracy: {accuracy}")
 
     """
     # Split data
