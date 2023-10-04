@@ -233,7 +233,7 @@ if __name__ == "__main__":
     print(f"Classifier Accuracy: {accuracy}")
     """
 
-    """Logistical Regression"""
+    # Logistical Regression
     unique_labels = set(Y.values)
     d = numerical_values(unique_labels)
     unique_words = set(data["Word"].values)
@@ -241,16 +241,21 @@ if __name__ == "__main__":
     data["POS_Hashed"] = data["POS_Tag"].map(d)
     data["Numerical_Words"] = data["Word"].map(d2)
     # need to encode mroe
-    Xl = torch.tensor(data["Numerical_Words"].values, dtype=torch.float32)
-    Yl = torch.tensor(data["POS_Hashed"].values, dtype=torch.long)
-    # print(Xl.shape)
+    """
+    Xl = torch.tensor(data["Numerical_Words"].values, dtype=torch.float32).reshape(
+        -1, 1
+    )
+    Yl = torch.tensor(
+        data["POS_Hashed"].values,
+        dtype=torch.long,
+    )
     # check
-    model = LogisticRegression(len(unique_words), len(unique_labels))
+    model = LogisticRegression(1, len(unique_labels))
 
     cross = nn.CrossEntropyLoss()
     optimizer = optim.SGD(model.parameters(), lr=0.01)
 
-    num_epochs = 1000
+    num_epochs = 20
 
     for epoch in range(num_epochs):
         optimizer.zero_grad()
@@ -258,12 +263,27 @@ if __name__ == "__main__":
         loss = cross(outputs, Yl)
         loss.backward()
         optimizer.step()
+        print("epoch: %d", epoch)
 
     if (epoch + 1) % 100 == 0:
         print(f"Epoch [{epoch+1}/{num_epochs}], Loss: {loss.item():.4f}")
 
     with torch.no_grad():
+        print
         predicted = torch.argmax(model(X), dim=1)
 
     accuracy = (predicted == y).float().mean()
     print(f"Accuracy: {accuracy.item()*100:.2f}%")
+    """
+
+    #################################################33
+    # SVM
+    Xvm = data["Numerical_Words"].values
+    Yvm = data["POS_Tag"].values
+    d3 = {}
+    for index, row in data.iterrows():
+        if d3[row["Word"]]:
+            d3[row["Word"]] += 1
+        else:
+            d3[row["Word"]] = 0
+    print(d3)
