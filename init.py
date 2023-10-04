@@ -7,6 +7,11 @@ import torch
 import nltk
 from nltk.classify import NaiveBayesClassifier
 
+# Logistic Regression Imports
+from nltk.classify.scikitlearn import SklearnClassifier
+from sklearn.linear_model import LogisticRegression
+from nltk.classify import accuracy
+
 
 # Load data
 def load_data(file_name):
@@ -231,14 +236,30 @@ if __name__ == "__main__":
     accuracy = nltk.classify.util.accuracy(classifier, test_set)
     print(f"Classifier Accuracy: {accuracy}")
 
+    
+    # Sample of using LR with scikitlearn interface
     """
-    # Split data
-    X_train, X_test, y_train, y_test = split_data(processed_data, labels)
+    from nltk.classify.scikitlearn import SklearnClassifier
+    from sklearn.linear_model import LogisticRegression
+    from nltk.classify import accuracy
 
-    # Initialize and train the model
-    model = CustomModel()
-    train_model(model, X_train, y_train)
+    # Sample data: A list of (features, label) pairs
+    train_set = [({'feature1': 'value1', 'feature2': 'value2'}, 'label1'),
+                ({'feature1': 'value3', 'feature2': 'value4'}, 'label2'),
+                # ... add more training examples
+                ]
 
-    # Evaluate the model
-    evaluate_model(model, X_test, y_test)
+    test_set = [({'feature1': 'value5', 'feature2': 'value6'}, 'label1'),
+                # ... add more test examples
+            ]
+
+    # Create an NLTK classifier with Logistic Regression from Scikit-learn
+    classifier = SklearnClassifier(LogisticRegression()).train(train_set)
+
+    # Predict
+    predicted_label = classifier.classify({'feature1': 'some_value', 'feature2': 'another_value'})
+
+    # Evaluate the classifier
+    print("Accuracy:", accuracy(classifier, test_set))
+
     """
