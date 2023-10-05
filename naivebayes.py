@@ -6,7 +6,6 @@ from sklearn.model_selection import train_test_split
 import torch
 import nltk
 from nltk.classify import NaiveBayesClassifier
-import syllables
 
 # Logistic Regression Imports
 from nltk.classify.scikitlearn import SklearnClassifier
