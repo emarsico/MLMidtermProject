@@ -150,7 +150,6 @@ if __name__ == "__main__":
             "Up_Two",
             "Back_Two",
             "After_Parenthesis",
-            "Position",
         ]
     ]
     Y = data["POS_Tag"]
