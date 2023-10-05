@@ -6,6 +6,7 @@ from sklearn.model_selection import train_test_split
 import torch
 import nltk
 from nltk.classify import NaiveBayesClassifier
+import syllables
 
 # Logistic Regression Imports
 from nltk.classify.scikitlearn import SklearnClassifier
@@ -17,7 +18,6 @@ from nltk.classify import accuracy
 def load_data(file_name):
     words = []
     pos_tags = []
-    entity_labels = []
     with open(file_name, "r") as file:
         lines = file.readlines()
 
@@ -31,58 +31,11 @@ def load_data(file_name):
     return df
 
 
-def word_features(row):
-    return {
-        "Word": row[
-            0
-        ],  # Accessing the first element, which corresponds to the 'Word' column
-        "Capitalized": is_capitalized(row[2]),
-        "Length": row[3],
-        "Prefix": row[4],
-        "Suffix": row[5],
-        "Position": row[6],
-    }
-
-
-def numerical_labels(pos):
-    d = {}
-    count = 0
-    for i in pos:
-        d[i] = count
-        count += 1
-    return d
-
-
 # Returns true if a word is capitalized, need to implement functionality for punctuations
 def is_capitalized(word):
     if word[0] == word[0].upper():
         return 1
     return 0
-
-
-def prefix(word):
-    prefixes = [
-        "multi",
-        "over",
-        "un",
-        "dis",
-        "in",
-        "pre",
-        "inter",
-        "re",
-        "co",
-        "sub",
-        "mis",
-        "anti",
-        "ex",
-        "tele",
-        "bi",
-    ]
-    for i in range(0, len(prefixes)):
-        if word.startswith(prefixes[i]):
-            return i
-    # no prefix numerical value
-    return len(prefixes) + 1
 
 
 def suffix(word):
@@ -134,64 +87,78 @@ def distances_from_end_of_sentence(text):
     return result
 
 
-def syllable_count(word):
-    word = word.lower()
-    count = 0
-    vowels = ["a", "e", "i", "o", "u"]
-    if word[0] in vowels:
-        count += 1
-    for index in range(1, len(word)):
-        if word[index] in vowels and word[index - 1] not in vowels:
-            count += 1
-    if word.endswith("e"):
-        count -= 1
-    return count if count != 0 else 1
+def word_frequency(words):
+    d = {}
+    for i in words:
+        if i in d:
+            d[i] += 1
+        else:
+            d[i] = 0
+    return d
 
 
-# Split data into training and testing sets
-def split_data(data, labels):
-    # TODO: Implement data splitting
-    pass
+def in_parenthesis(text):
+    p = []
+    opened = 0
+    for i in text:
+        if i == "-LRB-":
+            opened = 1
+            p.append(2)
+        elif i == "-RRB-":
+            opened = 0
+            p.append(2)
+        else:
+            p.append(opened)
+    return p
+
 
 # Main execution
 if __name__ == "__main__":
     # Load data
     data = load_data("train.txt")
-    # print(set(Y.values))
-    # unique_labels = set(Y.values)
-    # d = numerical_labels(unique_labels)
-    # print(d)
-    data["Capitalized"] = data["Word"].apply(is_capitalized)
-    data["Length"] = data["Word"].apply(len)
-    data["Prefix"] = data["Word"].apply(prefix)
-    data["Suffix"] = data["Word"].apply(suffix)
-    data["Syllables"] = data["Word"].apply(syllable_count)
+
     distances = distance_from_period(data["Word"].values)
     distance_from_end = distances_from_end_of_sentence(data["Word"].values)
-    print(distance_from_end)
-    for index, row in data.iterrows():
-        data.at[index, "Position"] = floor(distances[index])
-    for index, row in data.iterrows():
-        data.at[index, "Distance_From_End"] = floor(distance_from_end[index])
+    frequency = word_frequency(data["Word"].values)
+    parenthesis = in_parenthesis(data["Word"].values)
+
+    data["Capitalized"] = data["Word"].apply(is_capitalized)
+    data["Length"] = data["Word"].apply(len)
+    data["Suffix"] = data["Word"].apply(suffix)
+    data["Prefix"] = data["Word"].apply(lambda x: x[:3])
+    data["Frequency"] = data["Word"].map(frequency)
+    data["Number"] = data["Word"].apply(
+        lambda word: any(char.isdigit() for char in word)
+    )
+    data["Next"] = data["Word"].shift(1)
+    data["Up_Two"] = data["Word"].shift(2)
+    data["Previous"] = data["Word"].shift(-1)
+    data["Back_Two"] = data["Word"].shift(-2)
+    data["After_Parenthesis"] = data.index.to_series().apply(lambda x: parenthesis[x])
+
     X = data[
         [
             "Word",
             "Capitalized",
             "Length",
-            "Prefix",
             "Suffix",
+            "Previous",
+            "Next",
+            "Frequency",
+            "Prefix",
+            "Number",
+            "Up_Two",
+            "Back_Two",
+            "After_Parenthesis",
             "Position",
-            "Distance_From_End",
         ]
     ]
-    # X = data[["Word"]]
     Y = data["POS_Tag"]
     features = [
         ({col: row[col] for col in X.columns}, label)
         for index, (index, row), label in zip(X.iterrows(), data.iterrows(), Y)
     ]
-    random.shuffle(features)
-
+    # Split data
     train_set, test_set = train_test_split(features, test_size=0.2, random_state=42)
 
     # Train
