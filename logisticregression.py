@@ -1,15 +1,7 @@
-from collections import defaultdict
-import pandas as pd
-import numpy as np
 from sklearn.feature_extraction import DictVectorizer
-from sklearn.feature_selection import SelectKBest, chi2
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import classification_report
-from sklearn.naive_bayes import MultinomialNB
-
-import matplotlib.pyplot as plt
-from imblearn.over_sampling import SMOTE
 
 # Open training data and split into sentences
 data = []
@@ -79,7 +71,7 @@ report = classification_report(y_test, y_pred)
 
 print(report)
 
-unlabeled_data = []
+unlabeled = []
 with open("unlabeled_test_test.txt") as file:
     sentence = []
     for line in file:
@@ -87,11 +79,11 @@ with open("unlabeled_test_test.txt") as file:
             word = line.strip()
             sentence.append(word)
         else:
-            unlabeled_data.append(sentence)
+            unlabeled.append(sentence)
             sentence = []
 
 X_unlabeled = []
-for sentence in unlabeled_data:
+for sentence in unlabeled:
     for i in range(len(sentence)):
         X_unlabeled.append(feature_extraction(sentence, i))
 
@@ -101,7 +93,7 @@ y_pred_unlabeled = lr_classifier.predict(X_unlabeled_transformed)
 
 with open("Dropouts.test.txt", 'w') as file:
     idx = 0
-    for sentence in unlabeled_data:
+    for sentence in unlabeled:
         for word in sentence:
             file.write(f"{word}\t{y_pred_unlabeled[idx]}\n")
             idx += 1

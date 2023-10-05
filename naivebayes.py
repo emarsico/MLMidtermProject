@@ -3,15 +3,8 @@ import random
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
-import torch
 import nltk
 from nltk.classify import NaiveBayesClassifier
-
-# Logistic Regression Imports
-from nltk.classify.scikitlearn import SklearnClassifier
-from sklearn.linear_model import LogisticRegression
-from nltk.classify import accuracy
-
 
 # Load data
 def load_data(file_name):
