@@ -1,0 +1,28 @@
+486 notes
+
+
+slack variables correspondents with dual vars. y1 y2 etc:
+
+pos y1 vaues mean basic slack
+
+
+
+Similarly, the xs and the vs have the same relation.
+
+
+every variable has a role of a control variable and a slack variable.
+
+y2>0. slack variable is y2
+
+
+if x1 is a slack variable, than v1 must be its control variable.
+
+
+x1 > 0, make less tan so (-1,0) is the proper form.
+
+
+increase b1 in the direction of the gradient.
+
+
+If we have a point wiuth 3 active contsraints, there are 3 ways to pair the constraints
+
